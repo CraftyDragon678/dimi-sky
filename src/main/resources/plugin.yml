@@ -3,4 +3,5 @@ version: @version@
 main: com.cragon.dimisky.DimiSky
 api-version: 1.13
 authors: [CraftyDragon678]
+depend: [Kotlin]
 website: https://github.com/CraftyDragon678/dimi-sky
