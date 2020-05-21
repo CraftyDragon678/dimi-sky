@@ -1,0 +1,6 @@
+name: DimiSky
+version: @version@
+main: com.cragon.dimisky.DimiSky
+api-version: 1.13
+authors: [CraftyDragon678]
+website: https://github.com/CraftyDragon678/dimi-sky
