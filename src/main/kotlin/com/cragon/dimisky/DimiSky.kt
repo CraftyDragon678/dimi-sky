@@ -6,73 +6,104 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scheduler.BukkitRunnable
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 import kotlin.random.Random
 
 class DimiSky : JavaPlugin(), Listener {
+    class GenerateData(val percent: Double, val block: Material)
+    private lateinit var generate: EnumMap<Material, Set<GenerateData>>
+
     override fun onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this)
+
+        generate = EnumMap(org.bukkit.Material::class.java)
+
+        run{
+            val tmp = HashSet<GenerateData>()
+            tmp.add(GenerateData(1.0/6, Material.OAK_LOG))
+            tmp.add(GenerateData(1.0/6, Material.SPRUCE_LOG))
+            tmp.add(GenerateData(1.0/6, Material.BIRCH_LOG))
+            tmp.add(GenerateData(1.0/6, Material.JUNGLE_LOG))
+            tmp.add(GenerateData(1.0/6, Material.ACACIA_LOG))
+            tmp.add(GenerateData(1.0/6, Material.DARK_OAK_LOG))
+            generate[Material.GREEN_GLAZED_TERRACOTTA] = tmp
+        }
+
+        run{
+            val tmp = HashSet<GenerateData>()
+            tmp.add(GenerateData(1.0, Material.OAK_LOG))
+            generate[Material.BROWN_GLAZED_TERRACOTTA] = tmp
+        }
+
+        run{
+            val tmp = HashSet<GenerateData>()
+            tmp.add(GenerateData(0.8, Material.STONE))
+            tmp.add(GenerateData(0.2, Material.COAL_ORE))
+            generate[Material.GRAY_GLAZED_TERRACOTTA] = tmp
+        }
+
+        run{
+            val tmp = HashSet<GenerateData>()
+            tmp.add(GenerateData(0.7, Material.STONE))
+            tmp.add(GenerateData(0.2, Material.COAL_ORE))
+            tmp.add(GenerateData(0.1, Material.IRON_ORE))
+            generate[Material.LIME_GLAZED_TERRACOTTA] = tmp
+        }
+
+        run{
+            val tmp = HashSet<GenerateData>()
+            tmp.add(GenerateData(0.6, Material.STONE))
+            tmp.add(GenerateData(0.2, Material.COAL_ORE))
+            tmp.add(GenerateData(0.1, Material.IRON_ORE))
+            tmp.add(GenerateData(0.05, Material.REDSTONE_ORE))
+            tmp.add(GenerateData(0.05, Material.LAPIS_ORE))
+            generate[Material.LIGHT_BLUE_GLAZED_TERRACOTTA] = tmp
+        }
+
+        run{
+            val tmp = HashSet<GenerateData>()
+            tmp.add(GenerateData(0.5, Material.STONE))
+            tmp.add(GenerateData(0.2, Material.COAL_ORE))
+            tmp.add(GenerateData(0.15, Material.IRON_ORE))
+            tmp.add(GenerateData(0.05, Material.REDSTONE_ORE))
+            tmp.add(GenerateData(0.05, Material.LAPIS_ORE))
+            tmp.add(GenerateData(0.04, Material.EMERALD_ORE))
+            tmp.add(GenerateData(0.01, Material.DIAMOND_ORE))
+            generate[Material.MAGENTA_GLAZED_TERRACOTTA] = tmp
+        }
+
+        run{
+            val tmp = HashSet<GenerateData>()
+            tmp.add(GenerateData(0.6, Material.STONE))
+            tmp.add(GenerateData(0.3, Material.IRON_ORE))
+            tmp.add(GenerateData(0.05, Material.EMERALD_ORE))
+            tmp.add(GenerateData(0.05, Material.DIAMOND_ORE))
+            generate[Material.YELLOW_GLAZED_TERRACOTTA] = tmp
+        }
+
     }
 
     @EventHandler
     fun onBlockBreak(e: BlockBreakEvent) {
         val under = e.block.world.getBlockAt(e.block.x, e.block.y - 1, e.block.z)
-        e.isCancelled = true
-        when (under.type) {
-            Material.GREEN_GLAZED_TERRACOTTA -> {
-                when (Random.nextInt(6)) {
-                    0 -> e.block.type = Material.OAK_LOG
-                    1 -> e.block.type = Material.SPRUCE_LOG
-                    2 -> e.block.type = Material.BIRCH_LOG
-                    3 -> e.block.type = Material.JUNGLE_LOG
-                    4 -> e.block.type = Material.ACACIA_LOG
-                    5 -> e.block.type = Material.DARK_OAK_LOG
+        generate[under.type]?.let {
+            val r = Random.nextInt(100).toDouble() / 100
+            var cur = 0.0
+
+            it.forEach {
+                cur += it.percent
+                if (cur > r) {
+                    object: BukkitRunnable() {
+                        override fun run() {
+                            e.block.type = it.block
+                        }
+                    }.runTaskLater(this, 1L)
+                    return
                 }
             }
-            Material.BROWN_GLAZED_TERRACOTTA -> {
-                e.block.type = Material.OAK_LOG
-            }
-            Material.GRAY_GLAZED_TERRACOTTA -> {
-                when (Random.nextInt(100)) {
-                    in 0..79 -> e.block.type = Material.STONE
-                    else -> e.block.type = Material.COAL_ORE
-                }
-            }
-            Material.LIME_GLAZED_TERRACOTTA -> {
-                when (Random.nextInt(100)) {
-                    in 0..69 -> e.block.type = Material.STONE
-                    in 70..89 -> e.block.type = Material.COAL_ORE
-                    else -> e.block.type = Material.IRON_ORE
-                }
-            }
-            Material.LIGHT_BLUE_GLAZED_TERRACOTTA -> {
-                when (Random.nextInt(100)) {
-                    in 0..59 -> e.block.type = Material.STONE
-                    in 60..79 -> e.block.type = Material.COAL_ORE
-                    in 80..89 -> e.block.type = Material.IRON_ORE
-                    in 90..94 -> e.block.type = Material.REDSTONE_ORE
-                    else -> e.block.type = Material.LAPIS_ORE
-                }
-            }
-            Material.MAGENTA_GLAZED_TERRACOTTA -> {
-                when (Random.nextInt(100)) {
-                    in 0..49 -> e.block.type = Material.STONE
-                    in 50..69 -> e.block.type = Material.COAL_ORE
-                    in 70..84 -> e.block.type = Material.IRON_ORE
-                    in 85..89 -> e.block.type = Material.REDSTONE_ORE
-                    in 90..94 -> e.block.type = Material.LAPIS_ORE
-                    in 95..98 -> e.block.type = Material.EMERALD_ORE
-                    else -> e.block.type = Material.DIAMOND_ORE
-                }
-            }
-            Material.YELLOW_GLAZED_TERRACOTTA -> {
-                when (Random.nextInt(100)) {
-                    in 0..59 -> e.block.type = Material.STONE
-                    in 60..89 -> e.block.type = Material.IRON_ORE
-                    in 90..94 -> e.block.type = Material.EMERALD_ORE
-                    else -> e.block.type = Material.DIAMOND_ORE
-                }
-            }
-            else -> e.isCancelled = false
         }
     }
 }
